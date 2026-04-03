@@ -47,3 +47,8 @@ temp/
 
 # 📁 Archivos de configuración sensibles
 config/*.json
+
+# 💾 Bases de datos
+*.db
+*.sqlite
+*.sqlite3
