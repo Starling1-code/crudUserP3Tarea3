@@ -12,6 +12,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [currentUser, setCurrentUser] = useState<User | null>(null);
     const [showForm, setShowForm] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
     const [formData, setFormData] = useState({ name: "", email: "", password: "" });
 
     useEffect(() => {
@@ -40,13 +41,43 @@ export default function Dashboard() {
     const handleCreateUser = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:3000/api/users", formData);
-            setUsers([...users, response.data]);
+            if (isEditing && currentUser) {
+                // Actualizar usuario existente
+                const updateData = { name: formData.name, email: formData.email };
+                if (formData.password) {
+                    updateData.password = formData.password;
+                }
+                const response = await axios.put(
+                    `http://localhost:3000/api/users/${currentUser.id}`,
+                    updateData
+                );
+                setUsers(users.map((u) => (u.id === currentUser.id ? response.data : u)));
+                setIsEditing(false);
+                setCurrentUser(null);
+            } else {
+                // Crear nuevo usuario
+                const response = await axios.post("http://localhost:3000/api/users", formData);
+                setUsers([...users, response.data]);
+            }
             setFormData({ name: "", email: "", password: "" });
             setShowForm(false);
         } catch (error) {
-            console.error("Error creating user:", error);
+            console.error(isEditing ? "Error updating user:" : "Error creating user:", error);
         }
+    };
+
+    const handleEditUser = (user: User) => {
+        setCurrentUser(user);
+        setFormData({ name: user.name, email: user.email, password: "" });
+        setIsEditing(true);
+        setShowForm(true);
+    };
+
+    const handleCancelEdit = () => {
+        setIsEditing(false);
+        setCurrentUser(null);
+        setFormData({ name: "", email: "", password: "" });
+        setShowForm(false);
     };
 
     const handleDeleteUser = async (id: number) => {
@@ -74,13 +105,20 @@ export default function Dashboard() {
                 <div className="dashboard-container">
                     <div className="section-header">
                         <h2>Usuarios</h2>
-                        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+                        <button onClick={() => {
+                            if (showForm) {
+                                handleCancelEdit();
+                            } else {
+                                setShowForm(true);
+                            }
+                        }} className="btn-primary">
                             {showForm ? "Cancelar" : "+ Nuevo Usuario"}
                         </button>
                     </div>
 
                     {showForm && (
                         <div className="form-container">
+                            <h3>{isEditing ? "Editar Usuario" : "Crear Nuevo Usuario"}</h3>
                             <form onSubmit={handleCreateUser}>
                                 <input
                                     type="text"
@@ -98,13 +136,14 @@ export default function Dashboard() {
                                 />
                                 <input
                                     type="password"
-                                    placeholder="Contraseña"
+                                    placeholder={isEditing ? "Contraseña (no editable)" : "Contraseña"}
                                     value={formData.password}
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                    required
+                                    required={!isEditing}
+                                    disabled={isEditing}
                                 />
                                 <button type="submit" className="btn-success">
-                                    Crear Usuario
+                                    {isEditing ? "Actualizar Usuario" : "Crear Usuario"}
                                 </button>
                             </form>
                         </div>
@@ -132,6 +171,12 @@ export default function Dashboard() {
                                             <td>{user.name}</td>
                                             <td>{user.email}</td>
                                             <td>
+                                                <button
+                                                    onClick={() => handleEditUser(user)}
+                                                    className="btn-edit"
+                                                >
+                                                    Editar
+                                                </button>
                                                 <button
                                                     onClick={() => handleDeleteUser(user.id)}
                                                     className="btn-delete"

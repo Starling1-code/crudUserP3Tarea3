@@ -21,10 +21,20 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
     const { id } = req.params;
+    const { name, email, password } = req.body;
+
+    const updateData: any = {};
+
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (password) {
+        const hash = await bcrypt.hash(password, 10);
+        updateData.password = hash;
+    }
 
     const user = await prisma.user.update({
         where: { id: Number(id) },
-        data: req.body,
+        data: updateData,
     });
 
     res.json(user);
