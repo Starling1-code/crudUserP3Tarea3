@@ -1,4 +1,7 @@
 /* Estilos generales */
+
+@import "tailwindcss";
+
 * {
   margin: 0;
   padding: 0;
