@@ -1,0 +1,24 @@
+# Auto detect text files
+* text=auto
+
+# Normalizat line endings a LF
+*.js eol=lf
+*.ts eol=lf
+*.tsx eol=lf
+*.jsx eol=lf
+*.json eol=lf
+*.css eol=lf
+*.html eol=lf
+*.md eol=lf
+*.gitignore eol=lf
+*.yml eol=lf
+*.yaml eol=lf
+*.sql eol=lf
+
+# Binarios
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.db binary
